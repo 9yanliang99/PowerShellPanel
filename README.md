@@ -67,7 +67,7 @@ Think of it as **GitHub Desktop for PowerShell**: you get the power, without the
 
 ### Installation
 
-Download the latest `PowerShellPanel.exe` from [Releases](https://github.com/your/repo/releases).
+Download the latest `PowerShellPanel.exe` from [Releases](https://github.com/9yanliang99/PowerShellPanel/releases).
 
 Requires:
 - **Windows 10+** (Windows 7/8 may work but not tested)
@@ -77,7 +77,7 @@ Requires:
 Or build from source:
 
 ```bash
-git clone https://github.com/your/repo.git
+git clone https://github.com/9yanliang99/PowerShellPanel.git
 cd PowerShellPanel
 dotnet build -c Release
 # output at: src/PowerShellPanel/bin/Release/net8.0-windows/
@@ -132,7 +132,7 @@ MIT
 
 ### 安装
 
-从 [Releases](https://github.com/your/repo/releases) 下载 `PowerShellPanel.exe`。
+从 [Releases](https://github.com/9yanliang99/PowerShellPanel/releases) 下载 `PowerShellPanel.exe`。
 
 需要：
 - **Windows 10 及以上**
@@ -141,7 +141,7 @@ MIT
 或从源码构建：
 
 ```bash
-git clone https://github.com/your/repo.git
+git clone https://github.com/9yanliang99/PowerShellPanel.git
 cd PowerShellPanel
 dotnet build -c Release
 ```
@@ -177,7 +177,7 @@ dotnet build -c Release
 
 ### 安裝
 
-從 [Releases](https://github.com/your/repo/releases) 下載 `PowerShellPanel.exe`。
+從 [Releases](https://github.com/9yanliang99/PowerShellPanel/releases) 下載 `PowerShellPanel.exe`。
 
 需要：
 - **Windows 10 以上**
@@ -186,7 +186,7 @@ dotnet build -c Release
 或從原始碼建置：
 
 ```bash
-git clone https://github.com/your/repo.git
+git clone https://github.com/9yanliang99/PowerShellPanel.git
 cd PowerShellPanel
 dotnet build -c Release
 ```
