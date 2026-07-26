@@ -203,6 +203,16 @@ public class MainViewModel : INotifyPropertyChanged
                 new() { Id="hash",       Name=L["Cmd.hash.Name"],      Description=L["Cmd.hash.Desc"],      PowerShellCommand="Get-FileHash -Path '{path}' -Algorithm SHA256 | Select-Object Algorithm, Hash | Out-String",
                     Parameters = new() { new() { Key="path", Label=L["Cmd.hash.Param.path"], Placeholder="Select a file...", Required=true }, }},
                 new() { Id="recycle",    Name=L["Cmd.recycle.Name"],   Description=L["Cmd.recycle.Desc"],   PowerShellCommand="Clear-RecycleBin -Force -ErrorAction Stop; Write-Host 'Recycle Bin emptied'" },
+                new() { Id="zip",        Name=L["Cmd.zip.Name"],       Description=L["Cmd.zip.Desc"],       PowerShellCommand="Compress-Archive -Path '{source}' -DestinationPath '{dest}' -Force -ErrorAction Stop; Write-Host \"Created: {dest}\"",
+                    Parameters = new() { new() { Key="source", Label=L["Cmd.zip.Param.source"], Placeholder="C:\\MyFolder", Required=true }, new() { Key="dest", Label=L["Cmd.zip.Param.dest"], Placeholder="C:\\archive.zip", Required=true }, }},
+                new() { Id="unzip",      Name=L["Cmd.unzip.Name"],     Description=L["Cmd.unzip.Desc"],     PowerShellCommand="Expand-Archive -Path '{source}' -DestinationPath '{dest}' -Force -ErrorAction Stop; Write-Host \"Extracted to: {dest}\"",
+                    Parameters = new() { new() { Key="source", Label=L["Cmd.unzip.Param.source"], Placeholder="C:\\archive.zip", Required=true }, new() { Key="dest", Label=L["Cmd.unzip.Param.dest"], Placeholder="C:\\Extracted", Required=true }, }},
+                new() { Id="copyfile",   Name=L["Cmd.copyfile.Name"],  Description=L["Cmd.copyfile.Desc"],  PowerShellCommand="$op = Copy-Item -Path '{source}' -Destination '{dest}' -PassThru -ErrorAction Stop; Write-Host \"Copied: $($op.FullName)\"",
+                    Parameters = new() { new() { Key="source", Label=L["Cmd.copyfile.Param.source"], Placeholder="C:\\file.txt", Required=true }, new() { Key="dest", Label=L["Cmd.copyfile.Param.dest"], Placeholder="D:\\Backup\\file.txt", Required=true }, }},
+                new() { Id="deleteold",  Name=L["Cmd.deleteold.Name"], Description=L["Cmd.deleteold.Desc"],PowerShellCommand="$count = (Get-ChildItem -Path '{path}' -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-{days}) }).Count; Get-ChildItem -Path '{path}' -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-{days}) } | Remove-Item -Force -ErrorAction SilentlyContinue; Write-Host \"Deleted $count files older than {days} days\"",
+                    Parameters = new() { new() { Key="path", Label=L["Cmd.deleteold.Param.path"], Placeholder="C:\\Logs", DefaultValue=".", Required=true }, new() { Key="days", Label=L["Cmd.deleteold.Param.days"], Placeholder="30", DefaultValue="30", Type=ParameterType.Number, Required=true }, }},
+                new() { Id="testpath",   Name=L["Cmd.testpath.Name"],  Description=L["Cmd.testpath.Desc"],  PowerShellCommand="if (Test-Path '{path}') { Write-Host 'EXISTS: {path}'; Get-Item '{path}' | Select-Object FullName, Length, LastWriteTime | Out-String -Width 200 } else { Write-Host 'NOT FOUND: {path}' }",
+                    Parameters = new() { new() { Key="path", Label=L["Cmd.testpath.Param.path"], Placeholder="C:\\Windows\\System32", Required=true }, }},
             }),
 
             // ── 🔧 Process Management ──
@@ -240,6 +250,11 @@ public class MainViewModel : INotifyPropertyChanged
                 new() { Id="tasksched",      Name=L["Cmd.tasksched.Name"],      Description=L["Cmd.tasksched.Desc"],      PowerShellCommand="Get-ScheduledTask | Where-Object State -ne 'Disabled' | Select-Object TaskName, State, TaskPath | Sort-Object TaskPath | Out-String -Width 300" },
                 new() { Id="regquery",       Name=L["Cmd.regquery.Name"],       Description=L["Cmd.regquery.Desc"],       PowerShellCommand="Get-ItemProperty -Path '{path}' -ErrorAction Stop | Out-String -Width 300",
                     Parameters = new() { new() { Key="path", Label=L["Cmd.regquery.Param.path"], Placeholder="HKLM:\\Software\\Microsoft\\Windows NT\\CurrentVersion", Required=true }, }},
+                new() { Id="psver",          Name=L["Cmd.psver.Name"],         Description=L["Cmd.psver.Desc"],         PowerShellCommand="$PSVersionTable | Out-String; Write-Host ''; Get-Host | Select-Object Version, UI | Out-String" },
+                new() { Id="getdate",        Name=L["Cmd.getdate.Name"],       Description=L["Cmd.getdate.Desc"],       PowerShellCommand="Write-Host \"UTC : $((Get-Date).ToUniversalTime().ToString('yyyy-MM-dd HH:mm:ss'))\"; Write-Host \"Local: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')\"; Write-Host \"Unix : $([DateTimeOffset]::Now.ToUnixTimeSeconds())\"; Write-Host \"Day  : $(Get-Date -Format 'dddd')\"" },
+                new() { Id="cleartemp",      Name=L["Cmd.cleartemp.Name"],     Description=L["Cmd.cleartemp.Desc"],     PowerShellCommand="$tmp = [System.IO.Path]::GetTempPath(); $count = (Get-ChildItem $tmp -Recurse -File -ErrorAction SilentlyContinue).Count; Remove-Item \"$tmp*\" -Recurse -Force -ErrorAction SilentlyContinue; Write-Host \"Cleared $count temp files from $tmp\"" },
+                new() { Id="checkdisk",      Name=L["Cmd.checkdisk.Name"],     Description=L["Cmd.checkdisk.Desc"],     PowerShellCommand="Repair-Volume -DriveLetter '{drive}' -Scan -ErrorAction Stop; Write-Host 'Drive {drive}: scan complete'",
+                    Parameters = new() { new() { Key="drive", Label=L["Cmd.checkdisk.Param.drive"], Placeholder="C", DefaultValue="C", Required=true }, }},
             }),
 
             // ── 🌐 Network Tools ──
@@ -265,6 +280,10 @@ public class MainViewModel : INotifyPropertyChanged
                     Parameters = new() { new() { Key="ssid", Label=L["Cmd.wifipass.Param.ssid"], Placeholder="Your Wi-Fi SSID", Required=true }, }},
                 new() { Id="firewall",    Name=L["Cmd.firewall.Name"],    Description=L["Cmd.firewall.Desc"],    PowerShellCommand="Get-NetFirewallRule -Direction Inbound -Enabled True | Select-Object DisplayName, Action, Profile | Sort-Object DisplayName | Out-String -Width 250" },
                 new() { Id="netshare",    Name=L["Cmd.netshare.Name"],    Description=L["Cmd.netshare.Desc"],    PowerShellCommand="Get-SmbShare | Select-Object Name, Path, Description, ShareState | Out-String -Width 200" },
+                new() { Id="flushdns",    Name=L["Cmd.flushdns.Name"],    Description=L["Cmd.flushdns.Desc"],    PowerShellCommand="Clear-DnsClientCache; Write-Host 'DNS cache flushed successfully'" },
+                new() { Id="restartadapter",Name=L["Cmd.restartadapter.Name"],Description=L["Cmd.restartadapter.Desc"],PowerShellCommand="Restart-NetAdapter -Name '{name}' -ErrorAction Stop; Write-Host \"Adapter '{name}' restarted\"",
+                    Parameters = new() { new() { Key="name", Label=L["Cmd.restartadapter.Param.name"], Placeholder="Ethernet", DefaultValue="Ethernet", Required=true }, }},
+                new() { Id="netconfig",   Name=L["Cmd.netconfig.Name"],   Description=L["Cmd.netconfig.Desc"],   PowerShellCommand="Get-NetIPConfiguration | Select-Object InterfaceAlias, IPv4Address, IPv4DefaultGateway, DNSServer | Out-String -Width 200" },
             }),
 
             // ── 📦 Software & Updates ──
@@ -275,6 +294,10 @@ public class MainViewModel : INotifyPropertyChanged
                 new() { Id="winget-list",Name=L["Cmd.winget.Name"],     Description=L["Cmd.winget.Desc"],     PowerShellCommand="winget list | Select-Object -Skip 2 | Out-String -Width 200" },
                 new() { Id="startup",    Name=L["Cmd.startup.Name"],    Description=L["Cmd.startup.Desc"],    PowerShellCommand="Get-CimInstance Win32_StartupCommand | Select-Object Name, Command, User | Out-String -Width 300" },
                 new() { Id="choco",      Name=L["Cmd.choco.Name"],      Description=L["Cmd.choco.Desc"],      PowerShellCommand="choco list --local-only 2>&1 | Out-String -Width 200" },
+                new() { Id="download",   Name=L["Cmd.download.Name"],   Description=L["Cmd.download.Desc"],   PowerShellCommand="Invoke-WebRequest -Uri '{url}' -OutFile '{path}' -ErrorAction Stop; Write-Host \"Downloaded to: {path}\"",
+                    Parameters = new() { new() { Key="url", Label=L["Cmd.download.Param.url"], Placeholder="https://example.com/file.zip", Required=true }, new() { Key="path", Label=L["Cmd.download.Param.path"], Placeholder="C:\\Users\\Public\\Downloads\\file.zip", Required=true }, }},
+                new() { Id="exportcsv",  Name=L["Cmd.exportcsv.Name"],  Description=L["Cmd.exportcsv.Desc"],  PowerShellCommand="Invoke-Expression '{command}' | Export-Csv -Path '{path}' -NoTypeInformation -Encoding UTF8 -ErrorAction Stop; Write-Host \"Exported to: {path}\"",
+                    Parameters = new() { new() { Key="command", Label=L["Cmd.exportcsv.Param.command"], Placeholder="Get-Process | Select Name,Id,CPU", Required=true }, new() { Key="path", Label=L["Cmd.exportcsv.Param.path"], Placeholder="C:\\report.csv", Required=true }, }},
             }),
 
             // ── 🖥️ Hardware & Performance ──
@@ -286,6 +309,9 @@ public class MainViewModel : INotifyPropertyChanged
                 new() { Id="diskhealth", Name=L["Cmd.diskhealth.Name"], Description=L["Cmd.diskhealth.Desc"], PowerShellCommand="Get-PhysicalDisk | Select-Object FriendlyName, MediaType, HealthStatus, OperationalStatus, Size | Out-String -Width 200" },
                 new() { Id="battery",    Name=L["Cmd.battery.Name"],    Description=L["Cmd.battery.Desc"],    PowerShellCommand="Get-CimInstance Win32_Battery | Select-Object Name, EstimatedChargeRemaining, BatteryStatus, EstimatedRunTime | Out-String -Width 200" },
                 new() { Id="perf-cpu",   Name=L["Cmd.perfcpu.Name"],    Description=L["Cmd.perfcpu.Desc"],    PowerShellCommand="(Get-CimInstance Win32_Processor | Measure-Object -Property LoadPercentage -Average).Average; Write-Host '% CPU usage'" },
+                new() { Id="monitor",    Name=L["Cmd.monitor.Name"],    Description=L["Cmd.monitor.Desc"],    PowerShellCommand="Get-CimInstance Win32_DesktopMonitor | Select-Object Name, ScreenWidth, ScreenHeight, MonitorManufacturerName | Out-String -Width 200" },
+                new() { Id="audiodev",   Name=L["Cmd.audiodev.Name"],   Description=L["Cmd.audiodev.Desc"],   PowerShellCommand="Get-PnpDevice -Class AudioEndpoint | Select-Object FriendlyName, Status, InstanceId | Out-String -Width 200" },
+                new() { Id="printers",   Name=L["Cmd.printers.Name"],   Description=L["Cmd.printers.Desc"],   PowerShellCommand="Get-Printer | Select-Object Name, DriverName, PortName, Shared, Published | Out-String -Width 200" },
             }),
 
             // ── 👤 User & Security ──
@@ -299,6 +325,13 @@ public class MainViewModel : INotifyPropertyChanged
                 new() { Id="whologged",   Name=L["Cmd.whologged.Name"],   Description=L["Cmd.whologged.Desc"],   PowerShellCommand="query user | Out-String -Width 200" },
                 new() { Id="passpolicy",  Name=L["Cmd.passpolicy.Name"],  Description=L["Cmd.passpolicy.Desc"],  PowerShellCommand="net accounts | Out-String -Width 200" },
                 new() { Id="privs",       Name=L["Cmd.privs.Name"],       Description=L["Cmd.privs.Desc"],       PowerShellCommand="whoami /priv | Out-String -Width 300" },
+                new() { Id="execpolicy",  Name=L["Cmd.execpolicy.Name"],  Description=L["Cmd.execpolicy.Desc"],  PowerShellCommand="Get-ExecutionPolicy -List | Out-String -Width 200" },
+                new() { Id="fileacl",     Name=L["Cmd.fileacl.Name"],     Description=L["Cmd.fileacl.Desc"],     PowerShellCommand="Get-Acl -Path '{path}' | Format-List | Out-String -Width 300",
+                    Parameters = new() { new() { Key="path", Label=L["Cmd.fileacl.Param.path"], Placeholder="C:\\Windows", DefaultValue="C:\\Windows", Required=true }, }},
+                new() { Id="sessions",    Name=L["Cmd.sessions.Name"],    Description=L["Cmd.sessions.Desc"],    PowerShellCommand="query session | Out-String -Width 200" },
+                new() { Id="restorept",   Name=L["Cmd.restorept.Name"],   Description=L["Cmd.restorept.Desc"],   PowerShellCommand="Get-ComputerRestorePoint | Select-Object SequenceNumber, Description, CreationTime | Sort-Object CreationTime -Descending | Out-String -Width 300" },
+                new() { Id="reboot",      Name=L["Cmd.reboot.Name"],      Description=L["Cmd.reboot.Desc"],      PowerShellCommand="Restart-Computer -Force -Confirm:$false", IsDangerous=true },
+                new() { Id="shutdown",    Name=L["Cmd.shutdown.Name"],    Description=L["Cmd.shutdown.Desc"],    PowerShellCommand="Stop-Computer -Force -Confirm:$false", IsDangerous=true },
             }),
 
             // ── 📋 Text & Encoding ──
@@ -314,6 +347,10 @@ public class MainViewModel : INotifyPropertyChanged
                 new() { Id="findstr",    Name=L["Cmd.findstr.Name"],    Description=L["Cmd.findstr.Desc"],    PowerShellCommand="Get-ChildItem -Path '{path}' -Recurse -File -ErrorAction SilentlyContinue | Select-String -Pattern '{pattern}' -SimpleMatch | Select-Object Filename, LineNumber, Line -First 50 | Out-String -Width 300",
                     Parameters = new() { new() { Key="path", Label=L["Cmd.findstr.Param.path"], Placeholder=".", DefaultValue=".", Required=true }, new() { Key="pattern", Label=L["Cmd.findstr.Param.pattern"], Placeholder="text to find", Required=true }, }},
                 new() { Id="guid",       Name=L["Cmd.guid.Name"],       Description=L["Cmd.guid.Desc"],       PowerShellCommand="[Guid]::NewGuid().ToString() | Out-String" },
+                new() { Id="checksum",   Name=L["Cmd.checksum.Name"],   Description=L["Cmd.checksum.Desc"],   PowerShellCommand="Get-FileHash -Path '{path}' -Algorithm SHA256 | Select-Object Algorithm, Hash | Out-String; Write-Host '---'; Get-FileHash -Path '{path}' -Algorithm MD5 | Select-Object Algorithm, Hash | Out-String",
+                    Parameters = new() { new() { Key="path", Label=L["Cmd.checksum.Param.path"], Placeholder="Select a file...", Required=true }, }},
+                new() { Id="folderreport",Name=L["Cmd.folderreport.Name"],Description=L["Cmd.folderreport.Desc"],PowerShellCommand="Get-ChildItem -Path '{path}' -Directory -ErrorAction SilentlyContinue | ForEach-Object { $size = (Get-ChildItem $_.FullName -Recurse -File -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum; [PSCustomObject]@{ Name=$_.Name; 'Size(MB)'=[math]::Round($size/1MB,2) } } | Sort-Object 'Size(MB)' -Descending | Out-String -Width 200",
+                    Parameters = new() { new() { Key="path", Label=L["Cmd.folderreport.Param.path"], Placeholder=".", DefaultValue=".", Required=true }, }},
             }),
         };
 

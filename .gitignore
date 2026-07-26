@@ -24,3 +24,5 @@ Desktop.ini
 *.swp
 *.swo
 *~
+publish/
+*.zip

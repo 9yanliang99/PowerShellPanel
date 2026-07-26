@@ -27,6 +27,13 @@ public partial class MainWindow : Window
         };
     }
 
+    private void Window_Loaded(object sender, RoutedEventArgs e)
+    {
+        // Select first nav item on load
+        if (NavListBox.Items.Count > 0)
+            NavListBox.SelectedIndex = 0;
+    }
+
     /// <summary>
     /// Append terminal output to the RichTextBox, maintaining scroll position.
     /// </summary>
@@ -96,6 +103,18 @@ public partial class MainWindow : Window
                 return found;
         }
         return null;
+    }
+
+    private void NavListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (NavListBox.SelectedIndex < 0) return;
+
+        // Scroll the corresponding category into view in the content area
+        var container = ContentItems.ItemContainerGenerator.ContainerFromIndex(NavListBox.SelectedIndex);
+        if (container is FrameworkElement fe)
+        {
+            fe.BringIntoView();
+        }
     }
 
     private void Settings_Click(object sender, RoutedEventArgs e)

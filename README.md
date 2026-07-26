@@ -34,36 +34,23 @@ Think of it as **GitHub Desktop for PowerShell**: you get the power, without the
 
 ### Features
 
-- **67 built-in commands** across 8 categories: Files, Processes, Services, Network, Software, Hardware, Users, Text tools
+- **92 built-in commands** across 8 categories: Files, Processes, Services, Network, Software, Hardware, Users, Text tools
 - **Parameter dialogs** — commands like Ping, Kill Process, DNS Lookup pop up a form for you to fill in the blanks
 - **Real-time terminal** — every command shows as `PS> ...` with colorized output on the right
 - **3 languages** — English, 简体中文, 繁體中文; switch in Settings (⚙) without restart
 - **Zero-dependency PowerShell** — uses `System.Management.Automation` in-process; no `powershell.exe` subprocess
 
-### Screenshot
+### Screenshots
 
-```
-┌─────────────────────────────────────────────────────────┐
-│  PowerShell Panel                              ⚙       │
-│  Visual command panel · Click to fill, press Execute   │
-├──────────────────────┬──────────────────────────────────┤
-│ ┌──────────────────┐ │  PowerShell · Real-time output    │
-│ │ type a command…  │▶│ ──────────────────────────────── │
-│ └──────────────────┘ │                                  │
-│                      │  PS> Get-Process | Sort CPU      │
-│ 📁 Files & Directories│ ──────────────────────────────── │
-│ ┌──────────────────┐ │  Name    Id    CPU(s)  Mem(MB)   │
-│ │ List Files       │ │  chrome  1234  125.3   824.1     │
-│ │ List files and…  │ │  node     567   82.1   342.7     │
-│ └──────────────────┘ │  ...                             │
-│ ┌──────────────────┐ │                                  │
-│ │ Current Path     │ │                                  │
-│ └──────────────────┘ │                                  │
-│ ...                  │                                  │
-├──────────────────────┴──────────────────────────────────┤
-│ 🟢 Ready                         PowerShell 7 · WPF     │
-└─────────────────────────────────────────────────────────┘
-```
+<p align="center">
+  <img src="docs/screenshots/screenshot-01.png" alt="Main Interface" width="90%" />
+  <br/><em>Main interface — command cards with nav sidebar (left) + real-time terminal (right)</em>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/screenshot-02.png" alt="Parameter Dialog" width="70%" />
+  <br/><em>Parameter dialog — fill in the blanks, no syntax memorization needed</em>
+</p>
 
 ### Installation
 
@@ -122,9 +109,20 @@ MIT
 
 类比：**PowerShell 版的 GitHub Desktop**——你拥有 PowerShell 的全部能力，但不需要学命令行。
 
+### 截图
+
+<p align="center">
+  <img src="docs/screenshots/screenshot-01.png" alt="主界面" width="90%" />
+  <br/><em>主界面 — 左侧导航栏 + 命令卡片，右侧实时终端</em>
+</p>
+<p align="center">
+  <img src="docs/screenshots/screenshot-02.png" alt="参数弹窗" width="70%" />
+  <br/><em>参数弹窗 — 填空即可，无需记忆语法</em>
+</p>
+
 ### 功能
 
-- **67 条内置命令**，分为 8 大类：文件、进程、服务、网络、软件、硬件、用户、文本工具
+- **92 条内置命令**，分为 8 大类：文件、进程、服务、网络、软件、硬件、用户、文本工具
 - **参数弹窗** —— Ping、结束进程、DNS 解析等命令会弹出表单让你填写参数
 - **实时终端** —— 每条命令以 `PS>` 开头显示在右侧，带语法着色
 - **三语切换** —— 英语 / 简体中文 / 繁體中文，点击 ⚙ 设置即可切换
@@ -167,9 +165,20 @@ dotnet build -c Release
 
 類比：**PowerShell 版的 GitHub Desktop**——你擁有 PowerShell 的全部能力，但不需要學命令列。
 
+### 截圖
+
+<p align="center">
+  <img src="docs/screenshots/screenshot-01.png" alt="主介面" width="90%" />
+  <br/><em>主介面 — 左側導覽列 + 命令卡片，右側即時終端機</em>
+</p>
+<p align="center">
+  <img src="docs/screenshots/screenshot-02.png" alt="參數對話框" width="70%" />
+  <br/><em>參數對話框 — 填空即可，無需記憶語法</em>
+</p>
+
 ### 功能特色
 
-- **67 條內建命令**，分為 8 大類：檔案、處理程序、服務、網路、軟體、硬體、使用者、文字工具
+- **92 條內建命令**，分為 8 大類：檔案、處理程序、服務、網路、軟體、硬體、使用者、文字工具
 - **參數對話框** —— Ping、結束處理程序、DNS 查詢等命令會彈出表單讓你填寫參數
 - **即時終端機** —— 每條命令以 `PS>` 開頭顯示在右側，帶語法著色
 - **三語切換** —— 英文 / 簡體中文 / 繁體中文，點擊 ⚙ 設定即可切換
