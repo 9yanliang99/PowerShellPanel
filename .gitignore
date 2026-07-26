@@ -1,0 +1,26 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.DotSettings.user
+.vs/
+
+## Build
+*.exe
+*.dll
+*.pdb
+AppxPackages/
+!**/Assets/*.ico
+
+## OS
+Thumbs.db
+.DS_Store
+Desktop.ini
+
+## IDE
+.idea/
+*.swp
+*.swo
+*~
