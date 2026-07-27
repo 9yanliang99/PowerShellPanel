@@ -1,4 +1,5 @@
 <Window x:Class="PowerShellPanel.MainWindow"
+        x:Name="MainWin"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:PowerShellPanel.ViewModels"
@@ -8,6 +9,10 @@
         MinWidth="800" MinHeight="500"
         WindowStartupLocation="CenterScreen"
         Loaded="Window_Loaded">
+
+    <Window.Resources>
+        <l:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+    </Window.Resources>
 
     <Window.DataContext>
         <vm:MainViewModel />
@@ -138,12 +143,42 @@
                                 Background="{StaticResource SurfaceAltBrush}"
                                 BorderBrush="{StaticResource BorderBrush}"
                                 BorderThickness="0,0,1,0">
-                            <ListBox x:Name="NavListBox"
-                                     ItemsSource="{Binding Categories}"
-                                     Background="Transparent"
-                                     BorderThickness="0"
-                                     SelectionMode="Single"
-                                     SelectionChanged="NavListBox_SelectionChanged">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <!-- "+" Add button -->
+                                <Border Grid.Row="0"
+                                        Background="Transparent"
+                                        BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="0,0,0,1"
+                                        Padding="6">
+                                    <Button Content="{l:Loc Nav.NewCommand}"
+                                            FontSize="10" FontWeight="Bold"
+                                            Height="26" Padding="8,0"
+                                            Background="{StaticResource AccentBrush}"
+                                            Foreground="{StaticResource AccentForegroundBrush}"
+                                            BorderThickness="0" Cursor="Hand"
+                                            Command="{Binding AddCustomCommand}">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}"
+                                                        CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </Border>
+
+                                <ListBox x:Name="NavListBox" Grid.Row="1"
+                                         ItemsSource="{Binding Categories}"
+                                         Background="Transparent"
+                                         BorderThickness="0"
+                                         SelectionMode="Single"
+                                         SelectionChanged="NavListBox_SelectionChanged">
                                 <ListBox.ItemContainerStyle>
                                     <Style TargetType="ListBoxItem">
                                         <Setter Property="Padding" Value="0" />
@@ -180,6 +215,7 @@
                                     </Style>
                                 </ListBox.ItemContainerStyle>
                             </ListBox>
+                            </Grid>
                         </Border>
 
                         <!-- Thin separator line -->
@@ -215,19 +251,35 @@
                                                     <DataTemplate>
                                                         <Button Style="{StaticResource CommandCard}"
                                                                 Margin="0,0,0,5"
+                                                                Tag="{Binding}"
                                                                 Command="{Binding DataContext.FillCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                                 CommandParameter="{Binding}">
+                                                            <Button.ContextMenu>
+                                                                <ContextMenu>
+                                                                    <MenuItem Header="{l:Loc Custom.Edit}"
+                                                                              Command="{Binding DataContext.EditCustomCommand, Source={x:Reference MainWin}}"
+                                                                              CommandParameter="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                                                    <MenuItem Header="{l:Loc Custom.Delete}"
+                                                                              Command="{Binding DataContext.DeleteCustomCommand, Source={x:Reference MainWin}}"
+                                                                              CommandParameter="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                                                </ContextMenu>
+                                                            </Button.ContextMenu>
                                                             <Grid>
                                                                 <Grid.RowDefinitions>
                                                                     <RowDefinition Height="Auto" />
                                                                     <RowDefinition Height="Auto" />
                                                                 </Grid.RowDefinitions>
 
-                                                                <TextBlock Grid.Row="0"
-                                                                           Text="{Binding Name}"
-                                                                           FontSize="12"
-                                                                           FontWeight="SemiBold"
-                                                                           Foreground="{StaticResource TextPrimaryBrush}" />
+                                                                <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                                                    <TextBlock Text="{Binding Name}"
+                                                                               FontSize="12"
+                                                                               FontWeight="SemiBold"
+                                                                               Foreground="{StaticResource TextPrimaryBrush}" />
+                                                                    <TextBlock Text=" ✎" FontSize="9"
+                                                                               Foreground="{StaticResource AccentBrush}"
+                                                                               Visibility="{Binding IsCustom, Converter={StaticResource BoolToVisibility}}"
+                                                                               VerticalAlignment="Center" />
+                                                                </StackPanel>
 
                                                                 <TextBlock Grid.Row="1"
                                                                            Text="{Binding Description}"
@@ -365,12 +417,27 @@
                     <TextBlock Text="{Binding StatusText}"
                                FontSize="11"
                                Foreground="{StaticResource TextSecondaryBrush}" />
+                    <TextBlock Text=" · "
+                               FontSize="11"
+                               Foreground="{StaticResource TextTertiaryBrush}" />
+                    <TextBlock Text="{Binding CurrentDir}"
+                               FontSize="11"
+                               Foreground="{StaticResource TextTertiaryBrush}"
+                               FontFamily="Consolas, Courier New, monospace"
+                               MaxWidth="400"
+                               TextTrimming="CharacterEllipsis" />
                 </StackPanel>
 
-                <TextBlock Grid.Column="1"
-                           FontSize="11"
-                           Foreground="{StaticResource TextTertiaryBrush}"
-                           Text="{l:Loc Status.Bar}" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Content="↺" Width="24" Height="20" FontSize="11"
+                            Background="Transparent" Foreground="{StaticResource TextTertiaryBrush}"
+                            BorderThickness="0" Cursor="Hand" Padding="0"
+                            Command="{Binding ResetSession}" ToolTip="Reset PowerShell Session" />
+                    <TextBlock FontSize="11"
+                               Foreground="{StaticResource TextTertiaryBrush}"
+                               Text="{l:Loc Status.Bar}"
+                               Margin="8,0,0,0" />
+                </StackPanel>
             </Grid>
         </Border>
     </Grid>

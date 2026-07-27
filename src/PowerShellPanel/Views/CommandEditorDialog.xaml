@@ -1,0 +1,116 @@
+<Window x:Class="PowerShellPanel.Views.CommandEditorDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="clr-namespace:PowerShellPanel.Extensions"
+        Title="{l:Loc Custom.AddTitle}"
+        Width="520" Height="Auto"
+        MinWidth="420" MaxHeight="650"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        SizeToContent="Height">
+
+    <Window.Resources>
+        <ResourceDictionary Source="../Themes/WhiteTheme.xaml" />
+    </Window.Resources>
+
+    <Border Background="{StaticResource SurfaceBrush}"
+            BorderBrush="{StaticResource BorderBrush}"
+            BorderThickness="1" CornerRadius="10">
+        <Border.Effect>
+            <DropShadowEffect Color="#20000000" BlurRadius="20" ShadowDepth="2" Opacity="0.5" />
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Title -->
+            <Border Grid.Row="0"
+                    Background="{StaticResource SurfaceBrush}"
+                    CornerRadius="10,10,0,0"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="0,0,0,1"
+                    Padding="18,14"
+                    MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="WinTitle" Text="{l:Loc Custom.AddTitle}"
+                               FontSize="16" FontWeight="Bold"
+                               Foreground="{StaticResource TextPrimaryBrush}" />
+                    <Button Grid.Column="1" Content="✕" Width="28" Height="28" FontSize="14"
+                            Background="Transparent" Foreground="{StaticResource TextTertiaryBrush}"
+                            BorderThickness="0" Cursor="Hand" Click="Close_Click" />
+                </Grid>
+            </Border>
+
+            <!-- Form -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" MaxHeight="440">
+                <StackPanel Margin="18,14">
+
+                    <!-- Name -->
+                    <TextBlock Text="{l:Loc Custom.NameLabel}" FontSize="12" FontWeight="SemiBold"
+                               Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                    <TextBox x:Name="TbName" FontSize="13" Padding="10,7"
+                             Background="{StaticResource SurfaceAltBrush}"
+                             BorderBrush="{StaticResource BorderBrush}" />
+
+                    <!-- Description -->
+                    <TextBlock Text="{l:Loc Custom.DescLabel}" FontSize="12" FontWeight="SemiBold"
+                               Foreground="{StaticResource TextPrimaryBrush}" Margin="0,14,0,4" />
+                    <TextBox x:Name="TbDesc" FontSize="13" Padding="10,7"
+                             Background="{StaticResource SurfaceAltBrush}"
+                             BorderBrush="{StaticResource BorderBrush}" />
+
+                    <!-- Category -->
+                    <TextBlock Text="{l:Loc Custom.CatLabel}" FontSize="12" FontWeight="SemiBold"
+                               Foreground="{StaticResource TextPrimaryBrush}" Margin="0,14,0,4" />
+                    <ComboBox x:Name="CbCategory" FontSize="13" Padding="10,6"
+                              Background="{StaticResource SurfaceAltBrush}"
+                              BorderBrush="{StaticResource BorderBrush}" IsEditable="False" />
+
+                    <!-- Command Template -->
+                    <TextBlock Text="{l:Loc Custom.CmdLabel}" FontSize="12" FontWeight="SemiBold"
+                               Foreground="{StaticResource TextPrimaryBrush}" Margin="0,14,0,4" />
+                    <TextBox x:Name="TbCommand" FontSize="13" Padding="10,7"
+                             FontFamily="Consolas, Courier New, monospace"
+                             Background="{StaticResource SurfaceAltBrush}"
+                             BorderBrush="{StaticResource BorderBrush}"
+                             MinHeight="60" AcceptsReturn="True" TextWrapping="Wrap"
+                             TextChanged="TbCommand_TextChanged" />
+                    <TextBlock FontSize="10" Foreground="{StaticResource TextTertiaryBrush}"
+                               Margin="0,4,0,0"
+                               Text="{l:Loc Custom.Hint}" />
+
+                    <!-- Auto-detected Parameters -->
+                    <TextBlock x:Name="TbParamTitle" Text="Detected Parameters" FontSize="12"
+                               FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}"
+                               Margin="0,16,0,6" />
+                    <StackPanel x:Name="ParametersPanel" />
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Buttons -->
+            <Border Grid.Row="2"
+                    Background="{StaticResource SurfaceAltBrush}"
+                    CornerRadius="0,0,10,10" Padding="14,12">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="{l:Loc Custom.Cancel}" Style="{StaticResource SecondaryButton}"
+                            MinWidth="72" Height="30" FontSize="12" Click="Cancel_Click" />
+                    <Button x:Name="BtnSave" Content="{l:Loc Custom.Save}"
+                            Style="{StaticResource PrimaryButton}"
+                            MinWidth="110" Height="30" FontSize="12"
+                            Margin="8,0,0,0" Click="Save_Click" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

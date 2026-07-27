@@ -21,19 +21,23 @@ public class MainViewModel : INotifyPropertyChanged
         _psService.OutputReceived += OnOutputReceived;
         _psService.ErrorReceived += OnErrorReceived;
         _psService.ExecutionCompleted += OnExecutionCompleted;
+        _psService.LocationChanged += OnLocationChanged;
 
         PopulateCommands();
         ExecuteCommand = new RelayCommand(OnExecute, _ => !IsExecuting);
         CancelCommand = new RelayCommand(_ => _psService.Cancel(), _ => IsExecuting);
         FillCommand = new RelayCommand(OnFillCommand);
+        AddCustomCommand = new RelayCommand(_ => OpenAddDialog());
+        EditCustomCommand = new RelayCommand(p => { if (p is CommandItem c) OpenEditDialog(c); });
+        DeleteCustomCommand = new RelayCommand(p => { if (p is CommandItem c) DeleteCustom(c); });
+        ResetSession = new RelayCommand(_ => ResetSessionCmd());
 
         // Repopulate when language changes
         LocalizationService.Instance.PropertyChanged += (_, _) =>
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                Categories.Clear();
-                PopulateCommands();
+                ReloadAll();
                 StatusText = L["Status.Ready"];
             });
         };
@@ -71,6 +75,13 @@ public class MainViewModel : INotifyPropertyChanged
         set { _statusText = value; OnPropertyChanged(); }
     }
 
+    private string _currentDir = "";
+    public string CurrentDir
+    {
+        get => _currentDir;
+        set { _currentDir = value; OnPropertyChanged(); }
+    }
+
     public ObservableCollection<CommandCategory> Categories { get; } = new();
 
     // ═══════════════════════════════════════════════════
@@ -80,6 +91,24 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand ExecuteCommand { get; }
     public ICommand CancelCommand { get; }
     public ICommand FillCommand { get; }
+    public ICommand AddCustomCommand { get; }
+    public ICommand EditCustomCommand { get; }
+    public ICommand DeleteCustomCommand { get; }
+    public ICommand ResetSession { get; }
+
+    private void OnLocationChanged(string path)
+    {
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            CurrentDir = path;
+        });
+    }
+
+    private void ResetSessionCmd()
+    {
+        _psService.ResetSession();
+        CurrentDir = "";
+    }
 
     public async void ExecutePowerShellCommand(string command)
     {
@@ -167,6 +196,78 @@ public class MainViewModel : INotifyPropertyChanged
     }
 
     // ═══════════════════════════════════════════════════
+    //  Custom Command CRUD
+    // ═══════════════════════════════════════════════════
+
+    private static readonly string[] CategoryKeys =
+        ["Category.Files", "Category.Processes", "Category.Services",
+         "Category.Network", "Category.Software", "Category.Hardware",
+         "Category.Users", "Category.Text"];
+
+    private string[] GetCategoryNames() =>
+        CategoryKeys.Select(k => L[k]).Append(L["Custom.CategoryName"]).ToArray();
+
+    private void OpenAddDialog()
+    {
+        var dialog = new CommandEditorDialog(GetCategoryNames())
+        {
+            Owner = Application.Current.MainWindow,
+        };
+        if (dialog.ShowDialog() == true && dialog.Result != null)
+        {
+            CustomCommandService.Instance.Add(dialog.Result);
+            ReloadAll();
+        }
+    }
+
+    private void OpenEditDialog(CommandItem cmd)
+    {
+        var userCmd = CustomCommandService.Instance.Commands.FirstOrDefault(c => c.Id == cmd.Id);
+        if (userCmd == null) return;
+
+        var dialog = new CommandEditorDialog(GetCategoryNames(), userCmd)
+        {
+            Owner = Application.Current.MainWindow,
+        };
+        if (dialog.ShowDialog() == true && dialog.Result != null)
+        {
+            dialog.Result.Id = userCmd.Id;
+            CustomCommandService.Instance.Update(dialog.Result);
+            ReloadAll();
+        }
+    }
+
+    private void DeleteCustom(CommandItem cmd)
+    {
+        var msg = string.Format(L["Custom.DeleteConfirm"], cmd.Name);
+        if (MessageBox.Show(msg, L["Custom.DeleteTitle"], MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+        {
+            CustomCommandService.Instance.Delete(cmd.Id);
+            ReloadAll();
+        }
+    }
+
+    private void ReloadAll()
+    {
+        Categories.Clear();
+        PopulateCommands();
+    }
+
+    /// <summary>
+    /// Convert a UserCommand to a CommandItem for display.
+    /// </summary>
+    private static CommandItem ToCommandItem(UserCommand uc) => new()
+    {
+        Id = uc.Id,
+        Name = uc.Name,
+        Description = uc.Description,
+        Category = uc.Category,
+        PowerShellCommand = uc.PowerShellCommand,
+        Parameters = uc.Parameters,
+        IsCustom = true,
+    };
+
+    // ═══════════════════════════════════════════════════
     //  Command Library
     // ═══════════════════════════════════════════════════
 
@@ -174,10 +275,15 @@ public class MainViewModel : INotifyPropertyChanged
     {
         var cats = new List<CommandCategory>
         {
+            // ── ⭐ My Commands (custom) ──
+            new(L["Custom.CategoryName"], CustomCommandService.Instance.Commands.Select(ToCommandItem).ToList()),
+
             // ── 📁 Files & Directories ──
             new(L["Category.Files"], new List<CommandItem>
             {
                 new() { Id="ls",         Name=L["Cmd.ls.Name"],        Description=L["Cmd.ls.Desc"],        PowerShellCommand="Get-ChildItem | Select-Object Name, Length, LastWriteTime | Out-String -Width 200" },
+                new() { Id="cd",         Name="cd",                    Description="Change the current working directory", PowerShellCommand="Set-Location -Path '{path}' -ErrorAction Stop; Write-Host (Get-Location).Path",
+                    Parameters = new() { new() { Key="path", Label="Path", Placeholder="C:\\", Required=true }, }},
                 new() { Id="pwd",        Name=L["Cmd.pwd.Name"],       Description=L["Cmd.pwd.Desc"],       PowerShellCommand="Get-Location | Out-String" },
                 new() { Id="disk",       Name=L["Cmd.disk.Name"],      Description=L["Cmd.disk.Desc"],      PowerShellCommand="Get-PSDrive -PSProvider FileSystem | Select-Object Name, @{N='Total(GB)';E={[math]::Round($_.Used/1GB+$_.Free/1GB,1)}}, @{N='Free(GB)';E={[math]::Round($_.Free/1GB,1)}}, @{N='Used(GB)';E={[math]::Round($_.Used/1GB,1)}} | Out-String -Width 200" },
                 new() { Id="newfolder",  Name=L["Cmd.newfolder.Name"], Description=L["Cmd.newfolder.Desc"],PowerShellCommand="New-Item -Path '{path}' -ItemType Directory -ErrorAction Stop | Out-String; Write-Host 'Folder created'",

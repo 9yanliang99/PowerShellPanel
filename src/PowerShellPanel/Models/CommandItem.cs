@@ -19,6 +19,9 @@ public class CommandItem
 
     public bool IsDangerous { get; set; }
 
+    /// <summary>True if this is a user-created custom command (shows Edit/Delete).</summary>
+    public bool IsCustom { get; set; }
+
     /// <summary>
     /// User-configurable parameters. Empty = no dialog; just fill the command directly.
     /// </summary>
